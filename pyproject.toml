@@ -1,0 +1,92 @@
+[project]
+name = "wirv"
+dynamic = ["version"]
+description = "World IP Request Visualizer"
+readme = "readme.md"
+requires-python = ">=3.12,<3.13"
+authors = [{ name = "Anton Kudryavtsev", email = "dartt0n@ya.ru" }]
+dependencies = [
+    "loguru>=0.7.3",
+    "structlog>=25.2.0",
+]
+
+[dependency-groups]
+client = ["click>=8.1.8", "httpx>=0.28.1"]
+dev = ["hatch>=1.14.0", "ruff>=0.11.2"]
+server = [
+    "flask>=3.1.0",
+    "granian>=2.2.3",
+    "msgspec>=0.19.0",
+    "piccolo>=1.24.2",
+    "pydantic-settings>=2.8.1",
+    "ujson>=5.10.0",
+]
+
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+skip-excluded-dirs = true
+
+[tool.hatch.build.targets.wheel]
+only-packages = true
+packages = ["wirv"]
+
+[tool.hatch.version]
+path = "wirv/__version__.py"
+
+[tool.uv]
+package = true
+
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+pythonVersion = "3.12"
+pythonPlatform = "Linux"
+reportUnknownMemberType = false
+exclude = ["**/__pycache__", "**/.*"]
+
+[tool.ruff]
+exclude = [".mypy_cache", ".ruff_cache", ".venv", "venv", "build", "dist"]
+line-length = 120
+indent-width = 4
+target-version = "py312"
+fix = true
+
+[tool.ruff.format]
+preview = true
+
+[tool.ruff.lint]
+select = ["E", "F", "Q", "B", "I", "UP", "C"]
+ignore = []
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["E402", "F401"]
+"**/{tests,docs,tools}/*" = ["E402"]
+
+[tool.ruff.lint.flake8-bandit]
+check-typed-exception = true
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.pycodestyle]
+max-line-length = 128
+
+[tool.ruff.lint.isort]
+case-sensitive = true
+force-single-line = false
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = []
+
+[tool.ruff.lint.flake8-type-checking]
+runtime-evaluated-base-classes = [
+    "pydantic.BaseModel",
+    "pydantic_settings.BaseSettings",
+]

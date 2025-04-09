@@ -1,0 +1,73 @@
+volumes:
+  postgres:
+    driver: local
+  valkey:
+    driver: local
+
+services:
+  server:
+    container_name: wirv_server
+    build:
+      context: .
+      dockerfile: wirv/server/dockerfile
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9321:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 5s
+    environment:
+      PG_HOSTNAME: postgres:5432
+      PG_PASSWORD: ${PG_PASSWORD}
+      PG_USERNAME: ${PG_USERNAME}
+      PG_DATABASE: ${PG_DATABASE}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: --host 0.0.0.0 --port 8080 --workers 4 --runtime-mode mt --log --log-level info --access-log --backpressure 32
+
+  client:
+    container_name: wirv_client
+    build:
+      context: .
+      dockerfile: wirv/client/dockerfile
+    restart: no
+    environment:
+      SV_HOSTNAME: server:8080
+    depends_on:
+      server:
+        condition: service_healthy
+
+  postgres:
+    container_name: wirv_postgres
+    image: postgres:15.3-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_USER: ${PG_USERNAME}
+      POSTGRES_DB: ${PG_DATABASE}
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 5s
+
+  valkey:
+    image: valkey/valkey:8.1-bookworm
+    container_name: wirv_valkey
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli ping | grep PONG"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 3s
+    volumes:
+      - valkey:/data
+    command: --save 60 1 --loglevel warning
