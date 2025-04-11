@@ -11,8 +11,11 @@ def factory() -> Flask:
     asyncio.run(piccolo.apps.migrations.commands.forwards.forwards("all"))
 
     app = Flask("wirv.server")
+
     api = Blueprint("api", __name__, url_prefix="/api")
     api.register_blueprint(controllers.health)
+    api.register_blueprint(controllers.request_log)
+
     app.register_blueprint(api)
     app.register_blueprint(controllers.index)
     return app
