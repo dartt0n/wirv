@@ -126,7 +126,7 @@ class RangeRequestLogRes(msgspec.Struct):
     logs: list[GetRequestLogRes]
 
 
-@bp.get("/")
+@bp.get("/range")
 def range_query_logs(*_) -> Response:
     try:
         raw_from = flask.request.args.get("from", None, type=str)
