@@ -1,5 +1,5 @@
 import msgspec
-from flask import Blueprint, Request, Response
+from flask import Blueprint, Response
 
 from wirv.server.responses import JSON
 
@@ -11,5 +11,5 @@ class HealthDTO(msgspec.Struct):
 
 
 @bp.get("/")
-def health(request: Request) -> Response:
+def health() -> Response:
     return JSON(HealthDTO(status="ok"))

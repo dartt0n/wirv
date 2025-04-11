@@ -1,9 +1,9 @@
-from piccolo.columns import Float, Integer, Timestamptz, Varchar
+from piccolo.columns import UUID, Float, Timestamptz, Varchar
 from piccolo.table import Table
 
 
 class RequestLog(Table, tablename="request_log"):
-    id = Integer(primary_key=True, autoincrement=True)
+    id = UUID(primary_key=True)
     ip = Varchar(length=46, null=False)
     timestamp = Timestamptz(null=False)
     latitude = Float(null=False)

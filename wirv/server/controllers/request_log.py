@@ -1,9 +1,11 @@
 import ipaddress
 from datetime import datetime
 from typing import Self
+from uuid import UUID
 
+import flask
 import msgspec
-from flask import Blueprint, Request, Response
+from flask import Blueprint, Response
 from loguru import logger
 
 from wirv.server.database.tables import RequestLog
@@ -15,7 +17,7 @@ bp = Blueprint("request_log", __name__, url_prefix="/request_log")
 class CreateRequestLogReq(msgspec.Struct):
     ip: str
     timestamp: datetime
-    lantitude: float
+    latitude: float
     longitude: float
     suspicious: float
 
@@ -33,26 +35,33 @@ class CreateRequestLogReq(msgspec.Struct):
 
 
 class CreateRequestLogRes(msgspec.Struct):
-    id: int
+    id: str
 
 
 @bp.post("/")
-def create_request_log(request: Request) -> Response:
+def create_request_log() -> Response:
     try:
-        dto = msgspec.json.decode(request.get_data(), type=CreateRequestLogReq)
+        dto = msgspec.json.decode(flask.request.get_data(), type=CreateRequestLogReq)
         dto.validate()
 
-        RequestLog.insert(
-            RequestLog(
-                ip=dto.ip,
-                timestamp=dto.timestamp,
-                latitude=dto.lantitude,
-                longitude=dto.longitude,
-                suspicious=dto.suspicious,
+        data = (
+            RequestLog.insert(
+                RequestLog(
+                    ip=dto.ip,
+                    timestamp=dto.timestamp,
+                    latitude=dto.latitude,
+                    longitude=dto.longitude,
+                    suspicious=dto.suspicious,
+                )
             )
-        ).run_sync()
+            .returning(RequestLog.id)
+            .run_sync()
+        )
+        if len(data) == 0 or "id" not in data[0] or not isinstance(data[0]["id"], UUID):
+            return ERROR("failed to save log")
+        id = data[0]["id"]
 
-        return JSON(CreateRequestLogRes(id=0))
+        return JSON(CreateRequestLogRes(id=id.hex))
     except msgspec.ValidationError as e:
         logger.debug(f"client send invalid request: {e}")
         return INVALID(e)
@@ -62,7 +71,7 @@ def create_request_log(request: Request) -> Response:
 
 
 class GetRequestLogRes(msgspec.Struct):
-    id: int
+    id: str
     ip: str
     timestamp: datetime
     latitude: float
@@ -72,7 +81,7 @@ class GetRequestLogRes(msgspec.Struct):
     @classmethod
     def from_db(cls, log: RequestLog) -> Self:
         return cls(
-            id=log.id,
+            id=log.id.hex,
             ip=log.ip,
             timestamp=log.timestamp,
             latitude=log.latitude,
@@ -82,11 +91,9 @@ class GetRequestLogRes(msgspec.Struct):
 
 
 @bp.get("/<id>")
-def get_log_by_id(request: Request) -> Response:
+def get_log_by_id(id: str) -> Response:
     try:
-        if request.view_args is None:
-            return INVALID(msgspec.ValidationError("missing path parameter"))
-        log_id = int(request.view_args["id"])
+        log_id = UUID(id)
 
         log = RequestLog.objects().where(RequestLog.id == log_id).first().run_sync()
         if log is None:
@@ -95,7 +102,21 @@ def get_log_by_id(request: Request) -> Response:
         return JSON(GetRequestLogRes.from_db(log))
     except ValueError as e:
         logger.debug(f"client send invalid request: {e}")
-        return INVALID(msgspec.ValidationError("id must be integer"))
+        return INVALID(msgspec.ValidationError("id must be UUID"))
+    except Exception as e:
+        logger.error(f"get log request failed with error: {e}")
+        return ERROR()
+
+
+class GetAllRequestLogRes(msgspec.Struct):
+    logs: list[GetRequestLogRes]
+
+
+@bp.get("/")
+def get_all_logs() -> Response:
+    try:
+        logs = RequestLog.objects().order_by(RequestLog.timestamp, ascending=True).run_sync()
+        return JSON(GetAllRequestLogRes([GetRequestLogRes.from_db(log) for log in logs]))
     except Exception as e:
         logger.error(f"get log request failed with error: {e}")
         return ERROR()
@@ -106,12 +127,12 @@ class RangeRequestLogRes(msgspec.Struct):
 
 
 @bp.get("/")
-def range_query_logs(request: Request) -> Response:
+def range_query_logs(*_) -> Response:
     try:
-        raw_from = request.args.get("from", None, type=str)
+        raw_from = flask.request.args.get("from", None, type=str)
         if raw_from is None:
             return INVALID(msgspec.ValidationError("missing 'from' parameter"))
-        raw_to = request.args.get("to", None, type=str)
+        raw_to = flask.request.args.get("to", None, type=str)
         if raw_to is None:
             return INVALID(msgspec.ValidationError("missing 'to' parameter"))
 
