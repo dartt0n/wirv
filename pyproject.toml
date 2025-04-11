@@ -5,19 +5,16 @@ description = "World IP Request Visualizer"
 readme = "readme.md"
 requires-python = ">=3.12,<3.13"
 authors = [{ name = "Anton Kudryavtsev", email = "dartt0n@ya.ru" }]
-dependencies = [
-    "loguru>=0.7.3",
-    "structlog>=25.2.0",
-]
+dependencies = ["loguru>=0.7.3"]
 
 [dependency-groups]
 client = ["click>=8.1.8", "httpx>=0.28.1"]
-dev = ["hatch>=1.14.0", "ruff>=0.11.2"]
+dev = ["hatch>=1.14.0", "ipython>=9.1.0", "ruff>=0.11.2"]
 server = [
     "flask>=3.1.0",
     "granian>=2.2.3",
     "msgspec>=0.19.0",
-    "piccolo>=1.24.2",
+    "piccolo[postgres]>=1.24.2",
     "pydantic-settings>=2.8.1",
     "ujson>=5.10.0",
 ]

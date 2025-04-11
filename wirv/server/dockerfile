@@ -19,4 +19,5 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-group dev --group server
 
 ENV PATH="/app/.venv/bin:$PATH"
-ENTRYPOINT ["uv", "run", "granian", "--interface", "wsgi", "wirv.server:app"]
+ENV PICCOLO_CONF="wirv.server.piccolo_conf"
+ENTRYPOINT ["uv", "run", "granian", "--factory", "--interface", "wsgi", "wirv.server.app:factory"]
