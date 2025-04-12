@@ -71,6 +71,7 @@ class App {
         const startTime = new Date(logs[0].timestamp);
         let currentIndex = 0;
         let lastTimestamp = performance.now();
+        let simulatedTime = new Date(startTime);
 
         const animate = (timestamp) => {
             if (!this.isPlaying || currentIndex >= logs.length) {
@@ -81,8 +82,9 @@ class App {
             const deltaTime = timestamp - lastTimestamp;
             lastTimestamp = timestamp;
             
-            const simulatedTime = new Date(
-                startTime.getTime() + (deltaTime * this.playbackSpeed)
+            // Update simulated time based on real time and playback speed
+            simulatedTime = new Date(
+                simulatedTime.getTime() + (deltaTime * this.playbackSpeed)
             );
             this.timeline.updateCurrentTime(simulatedTime);
 
