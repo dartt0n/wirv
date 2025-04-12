@@ -2,6 +2,8 @@
 
 A real-time web request visualization tool that displays global network activity on an interactive 3D globe.
 
+![banner](./.github/assets/banner.jpg)
+
 ## Project Structure
 
 The project is organized into two main modules:
@@ -72,7 +74,18 @@ wirv/
 - Feature explanations
 - Usage instructions
 
-## Deployment Guide
+## Deployment
+
+As simple as:
+
+Put your data in the `data/ip_addresses.csv` file and run the following command:
+```
+docker compose up --build --detach
+```
+Wait around 45 seconds for the client to load data and you can proceed to [http://localhost:9321](http://localhost:9321).
+
+
+## Development Guide
 
 ### Prerequisites
 - Python 3.12
