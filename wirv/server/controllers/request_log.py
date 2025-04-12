@@ -7,6 +7,7 @@ import flask
 import msgspec
 from flask import Blueprint, Response
 from loguru import logger
+from piccolo.query import SelectRaw
 
 from wirv.server.database.tables import RequestLog
 from wirv.server.responses import ERROR, INVALID, JSON, NOT_FOUND
@@ -158,23 +159,26 @@ def range_query_logs(*_) -> Response:
         return ERROR()
 
 
+class TimelineBucket(msgspec.Struct):
+    timestamp: datetime
+    count: int
+
+
 class GetTimelineRes(msgspec.Struct):
-    head: datetime
-    tail: datetime
+    buckets: list[TimelineBucket]
 
 
 @bp.get("/timeline")
 def get_timeline() -> Response:
     try:
-        head = RequestLog.objects().order_by(RequestLog.timestamp, ascending=False).first().run_sync()
-        if head is None:
-            return NOT_FOUND("no logs found")
+        data = (
+            RequestLog.select(RequestLog.timestamp, SelectRaw("count(*) as count"))
+            .group_by(RequestLog.timestamp)
+            .order_by(RequestLog.timestamp, ascending=True)
+            .run_sync()
+        )
 
-        tail = RequestLog.objects().order_by(RequestLog.timestamp, ascending=True).first().run_sync()
-        if tail is None:
-            return NOT_FOUND("no logs found")
-
-        return JSON(GetTimelineRes(head.timestamp, tail.timestamp))
+        return JSON(GetTimelineRes([TimelineBucket(timestamp=d["timestamp"], count=d["count"]) for d in data]))
     except Exception as e:
         logger.error(f"get timeline request failed with error: {e}")
         return ERROR()
