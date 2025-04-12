@@ -95,8 +95,8 @@ class App {
                         id: log.id,
                         startLat: log.latitude,
                         startLng: log.longitude,
-                        endLat: log.server_latitude || 37.7749,
-                        endLng: log.server_longitude || -122.4194,
+                        endLat: 55.7535,
+                        endLng: 48.7434,
                         color: log.suspicious ? 0xff0000 : 0x808080,
                         ip: log.ip
                     });

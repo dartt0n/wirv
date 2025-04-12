@@ -13,6 +13,7 @@ export class GlobeVisualization {
         this.autoRotate = true;
         this.isDragging = false;
         this.previousMouseX = 0;
+        this.previousMouseY = 0;
         this.rotationSpeed = 0.001;
 
         // Create a container for all rotating elements
@@ -51,14 +52,28 @@ export class GlobeVisualization {
         canvas.addEventListener('mousedown', (event) => {
             this.isDragging = true;
             this.previousMouseX = event.clientX;
+            this.previousMouseY = event.clientY;
             this.autoRotate = false;
         });
 
         canvas.addEventListener('mousemove', (event) => {
             if (this.isDragging) {
                 const deltaX = event.clientX - this.previousMouseX;
+                const deltaY = event.clientY - this.previousMouseY;
+                
+                // Horizontal rotation
                 this.container.rotation.y += deltaX * 0.005;
+                
+                // Vertical rotation (limited to avoid flipping)
+                this.container.rotation.x += deltaY * 0.005;
+                // Clamp vertical rotation to avoid flipping
+                this.container.rotation.x = Math.max(
+                    -Math.PI / 2,
+                    Math.min(Math.PI / 2, this.container.rotation.x)
+                );
+                
                 this.previousMouseX = event.clientX;
+                this.previousMouseY = event.clientY;
             }
         });
 
@@ -73,6 +88,10 @@ export class GlobeVisualization {
         // Double click to toggle auto-rotation
         canvas.addEventListener('dblclick', () => {
             this.autoRotate = !this.autoRotate;
+            if (this.autoRotate) {
+                // Reset vertical rotation when auto-rotation starts
+                this.container.rotation.x = 0;
+            }
         });
     }
 
@@ -187,6 +206,8 @@ export class GlobeVisualization {
         // Auto-rotate only when not dragging
         if (this.autoRotate && !this.isDragging) {
             this.container.rotation.y += this.rotationSpeed;
+            // Smoothly reset vertical rotation during auto-rotate
+            this.container.rotation.x *= 0.95;
         }
 
         // Remove old arcs
