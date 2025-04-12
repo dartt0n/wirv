@@ -21,6 +21,7 @@ services:
       timeout: 5s
     environment:
       PG_HOSTNAME: postgres
+      PICCOLO_CONF: wirv.server.piccolo_conf
       PG_USERNAME: ${PG_USERNAME}
       PG_PASSWORD: ${PG_PASSWORD}
       PG_DATABASE: ${PG_DATABASE}

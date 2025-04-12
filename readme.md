@@ -78,12 +78,20 @@ wirv/
 
 As simple as:
 
-Put your data in the `data/ip_addresses.csv` file and run the following command:
+1. create a `.env` file with the following content:
+```.env
+PG_USERNAME=<username>
+PG_PASSWORD=<password>
+PG_DATABASE=<database>
+PG_HOSTNAME=<host>
 ```
-docker compose up --build --detach
+2. Put your data in the `data/ip_addresses.csv` file
+
+3. Run the following command:
+```
+docker compose up --build
 ```
 Wait around 45 seconds for the client to load data and you can proceed to [http://localhost:9321](http://localhost:9321).
-
 
 ## Development Guide
 
