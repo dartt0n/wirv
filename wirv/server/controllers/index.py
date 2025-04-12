@@ -1,11 +1,8 @@
-from flask import Blueprint, Response, render_template
+from flask import Blueprint, Response, make_response, render_template
 
-from wirv.server import templates
-from wirv.server.responses import HTML
-
-bp = Blueprint("health", __name__, url_prefix="/")
+bp = Blueprint("index", __name__)
 
 
 @bp.get("/")
 def index() -> Response:
-    return HTML(render_template(templates.index))
+    return make_response(render_template("index.html"))
