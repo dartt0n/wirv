@@ -1,7 +1,7 @@
 export class Timeline {
     constructor() {
         this.margin = { top: 10, right: 30, bottom: 30, left: 40 };
-        this.height = 100;
+        this.height = 60;
         this.padding = 20;
 
         // Create the container div for the timeline
@@ -9,13 +9,17 @@ export class Timeline {
             .style("position", "relative")
             .style("background", "#2a2a2a")
             .style("border-radius", "8px")
-            .style("padding", `${this.padding}px`);
+            .style("display", "flex")
+            .style("justify-content", "center")
+            .style("align-items", "center")
+            .style("padding", "0 15px")
 
         // Calculate width based on container
-        this.width = parseInt(this.container.style("width")) - this.margin.left - this.margin.right - (this.padding * 2);
+        this.width = parseInt(this.container.style("width")) - this.margin.left - this.margin.right - 30;
 
         // Create SVG
         this.svg = this.container.append("svg")
+            .style("display", "block")
             .attr("width", this.width + this.margin.left + this.margin.right)
             .attr("height", this.height + this.margin.top + this.margin.bottom)
             .append("g")
@@ -132,7 +136,7 @@ export class Timeline {
 
     onResize() {
         // Update width based on new container size
-        this.width = parseInt(this.container.style("width")) - this.margin.left - this.margin.right - (this.padding * 2);
+        this.width = parseInt(this.container.style("width")) - this.margin.left - this.margin.right - 30;
 
         // Update SVG size
         this.container.select("svg")
