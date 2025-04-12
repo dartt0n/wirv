@@ -156,3 +156,25 @@ def range_query_logs(*_) -> Response:
     except Exception as e:
         logger.error(f"get log request failed with error: {e}")
         return ERROR()
+
+
+class GetTimelineRes(msgspec.Struct):
+    head: datetime
+    tail: datetime
+
+
+@bp.get("/timeline")
+def get_timeline() -> Response:
+    try:
+        head = RequestLog.objects().order_by(RequestLog.timestamp, ascending=False).first().run_sync()
+        if head is None:
+            return NOT_FOUND("no logs found")
+
+        tail = RequestLog.objects().order_by(RequestLog.timestamp, ascending=True).first().run_sync()
+        if tail is None:
+            return NOT_FOUND("no logs found")
+
+        return JSON(GetTimelineRes(head.timestamp, tail.timestamp))
+    except Exception as e:
+        logger.error(f"get timeline request failed with error: {e}")
+        return ERROR()

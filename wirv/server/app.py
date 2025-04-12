@@ -1,16 +1,19 @@
 import asyncio
+from pathlib import Path
 
 import piccolo.apps.migrations.commands.forwards
-from flask import Blueprint, Flask
+from flask import Blueprint, Flask, send_from_directory
 
 from wirv.server import controllers
+
+STATIC_DIR = Path(__file__).parent / "static"
 
 
 def factory() -> Flask:
     # run migrations
     asyncio.run(piccolo.apps.migrations.commands.forwards.forwards("all"))
 
-    app = Flask("wirv.server")
+    app = Flask("wirv.server", static_folder=STATIC_DIR)
 
     api = Blueprint("api", __name__, url_prefix="/api")
     api.register_blueprint(controllers.health)
