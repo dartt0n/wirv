@@ -7,6 +7,7 @@ volumes:
 services:
   server:
     container_name: wirv_server
+    image: docker.io/dartt0n/wirv-server:latest
     build:
       context: .
       dockerfile: wirv/server/dockerfile
@@ -31,6 +32,7 @@ services:
     command: --host 0.0.0.0 --port 8080 --workers 1 --runtime-mode st --log --log-level info --access-log --backpressure 32
 
   client:
+    image: docker.io/dartt0n/wirv-client:latest
     container_name: wirv_client
     build:
       context: .
